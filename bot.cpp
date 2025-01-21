@@ -8,7 +8,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-const string BOT_TOKEN = "123456789:ABCdefGhijKLMnopQrstUVwxYZ"; // Ganti dengan token bot Anda
+const string BOT_TOKEN = "7663389256:AAGvz2CrFrdsUD1AUuOdc2dSodxG87_fFIk"; // Ganti dengan token bot Anda
 const string API_URL = "https://api.telegram.org/bot" + BOT_TOKEN;
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* userp) {
