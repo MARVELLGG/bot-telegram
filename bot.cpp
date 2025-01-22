@@ -41,19 +41,24 @@ void botLoop() {
 
             auto data = json::parse(response);
             for (auto& update : data["result"]) {
-                last_update_id = to_string(update["update_id"].get<int>() + 1);
-                string chat_id = update["message"]["chat"]["id"].get<string>();
-                string text = update["message"]["text"].get<string>();
+    last_update_id = to_string(update["update_id"].get<int>() + 1);
+    
+    // Pastikan chat_id adalah integer dan konversikan menjadi string
+    string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
+    
+    // Pastikan text adalah string
+    string text = update["message"]["text"].get<string>();
 
-                cout << "Received message: " << text << endl;
-                if (text == "/on") {
-                    sendMessage(chat_id, "Bot is now ON!");
-                } else if (text == "/off") {
-                    sendMessage(chat_id, "Bot is now OFF!");
-                } else {
-                    sendMessage(chat_id, "Unknown command: " + text);
-                }
+    cout << "Received message: " << text << endl;
+    if (text == "/on") {
+        sendMessage(chat_id, "Bot is now ON!");
+    } else if (text == "/off") {
+        sendMessage(chat_id, "Bot is now OFF!");
+    } else {
+        sendMessage(chat_id, "Unknown command: " + text);
+    }
             }
+            
         }
         this_thread::sleep_for(chrono::seconds(1));
     }
