@@ -29,25 +29,26 @@ string urlEncode(const string &value) {
 void sendMessage(const string& chat_id, const string& text) {
     CURL* curl = curl_easy_init();
     if (curl) {
-        string encoded_text = urlEncode(text);
+        string encoded_text = urlEncode(text);  // URL encode text to handle special characters
         string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + encoded_text;
 
         string response;
-        
+
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        
+
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
             cerr << "Curl error: " << curl_easy_strerror(res) << endl;
         } else {
             cout << "Response: " << response << endl;
         }
-        
-        curl_easy_cleanup(curl);
+
+        curl_easy_cleanup(curl);  // Corrected line: properly cleanup the curl handle
     }
 }
+
 
 void botLoop() {
     string last_update_id = "0"; // Offset untuk memastikan hanya update terbaru yang diproses
