@@ -48,6 +48,7 @@ void sendMessage(const string& chat_id, const string& text) {
     }
 }
 
+
 void botLoop() {
     string last_update_id = "0";
     while (true) {
