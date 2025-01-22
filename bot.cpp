@@ -30,7 +30,8 @@ void sendMessage(const string& chat_id, const string& text) {
     CURL* curl = curl_easy_init();
     if (curl) {
         string encoded_text = urlEncode(text);
-        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + encoded_text;
+        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + curl_easy_escape(curl, text.c_str(), text.length());
+
         string response;
         
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -54,7 +55,7 @@ void botLoop() {
         CURL* curl = curl_easy_init();
         if (curl) {
             string response;
-            string url = API_URL + "/getUpdates";  // Menghilangkan offset sementara
+            string url = API_URL + "/getUpdates"; // Menghilangkan offset sementara
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
@@ -75,7 +76,8 @@ void botLoop() {
 
                             // Cek dan kirim pesan sesuai dengan perintah
                             if (text == "/on") {
-                                sendMessage(chat_id, "Bot is now ON!");
+                                sendMessage("5043684340", "Bot is now ON!");
+
                             } else if (text == "/off") {
                                 sendMessage(chat_id, "Bot is now OFF!");
                             } else {
@@ -91,7 +93,6 @@ void botLoop() {
         this_thread::sleep_for(chrono::seconds(1));
     }
 }
-
 
 
 int main() {
