@@ -30,7 +30,7 @@ void sendMessage(const string& chat_id, const string& text) {
     CURL* curl = curl_easy_init();
     if (curl) {
         string encoded_text = urlEncode(text);
-        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + curl_easy_escape(curl, text.c_str(), text.length());
+        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + encoded_text;
 
         string response;
         
@@ -49,13 +49,14 @@ void sendMessage(const string& chat_id, const string& text) {
     }
 }
 
-
 void botLoop() {
+    string last_update_id = "0"; // Offset untuk memastikan hanya update terbaru yang diproses
+
     while (true) {
         CURL* curl = curl_easy_init();
         if (curl) {
             string response;
-            string url = API_URL + "/getUpdates"; // Menghilangkan offset sementara
+            string url = API_URL + "/getUpdates?offset=" + last_update_id; // Menambahkan offset untuk update baru
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
@@ -68,6 +69,9 @@ void botLoop() {
                 try {
                     auto data = json::parse(response);
                     for (auto& update : data["result"]) {
+                        // Update terakhir
+                        last_update_id = to_string(update["update_id"].get<int>() + 1);
+
                         if (update.contains("message") && update["message"].contains("chat")) {
                             string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
                             string text = update["message"]["text"].get<string>();
@@ -76,8 +80,7 @@ void botLoop() {
 
                             // Cek dan kirim pesan sesuai dengan perintah
                             if (text == "/on") {
-                                sendMessage("5043684340", "Bot is now ON!");
-
+                                sendMessage(chat_id, "Bot is now ON!");
                             } else if (text == "/off") {
                                 sendMessage(chat_id, "Bot is now OFF!");
                             } else {
@@ -90,10 +93,9 @@ void botLoop() {
                 }
             }
         }
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(chrono::seconds(1)); // Cek pembaruan setiap 1 detik
     }
 }
-
 
 int main() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
