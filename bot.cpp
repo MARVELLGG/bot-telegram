@@ -80,11 +80,11 @@ void botLoop() {
 
                             // Cek dan kirim pesan sesuai dengan perintah
                             if (text == "/on") {
-                                sendMessage(chat_id, "Bot is now ON!");
+                                sendMessage(chat_id, "Bot is now ON!"); // Gunakan chat_id yang benar
                             } else if (text == "/off") {
-                                sendMessage(chat_id, "Bot is now OFF!");
+                                sendMessage(chat_id, "Bot is now OFF!"); // Gunakan chat_id yang benar
                             } else {
-                                sendMessage(chat_id, "Unknown command: " + text);
+                                sendMessage(chat_id, "Unknown command: " + text); // Gunakan chat_id yang benar
                             }
                         }
                     }
