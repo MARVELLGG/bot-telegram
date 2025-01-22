@@ -70,7 +70,9 @@ void botLoop() {
                     string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
                     string text = update["message"]["text"].get<string>();
 
-                    cout << "Received message: " << text << endl;
+                    // Debug: Cetak chat_id dan text untuk memastikan nilainya
+                    cout << "Received message: " << text << " from chat_id: " << chat_id << endl;
+                    
                     if (text == "/on") {
                         sendMessage(chat_id, "Bot is now ON!");
                     } else if (text == "/off") {
@@ -84,6 +86,7 @@ void botLoop() {
         this_thread::sleep_for(chrono::seconds(1));
     }
 }
+
 
 int main() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
