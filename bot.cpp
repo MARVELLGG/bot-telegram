@@ -50,43 +50,48 @@ void sendMessage(const string& chat_id, const string& text) {
 
 
 void botLoop() {
-    string last_update_id = "0";
     while (true) {
         CURL* curl = curl_easy_init();
         if (curl) {
             string response;
-            string url = API_URL + "/getUpdates?offset=" + last_update_id;
+            string url = API_URL + "/getUpdates";  // Menghilangkan offset sementara
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
             curl_easy_perform(curl);
             curl_easy_cleanup(curl);
 
-            auto data = json::parse(response);
-            for (auto& update : data["result"]) {
-                last_update_id = to_string(update["update_id"].get<int>() + 1);
+            cout << "Response from getUpdates: " << response << endl; // Debugging
 
-                // Pastikan 'message' ada dan memiliki 'chat' dan 'text'
-                if (update["message"].contains("chat") && update["message"].contains("text")) {
-                    string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
-                    string text = update["message"]["text"].get<string>();
+            if (!response.empty()) {
+                try {
+                    auto data = json::parse(response);
+                    for (auto& update : data["result"]) {
+                        if (update.contains("message") && update["message"].contains("chat")) {
+                            string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
+                            string text = update["message"]["text"].get<string>();
 
-                    // Debug: Cetak chat_id dan text untuk memastikan nilainya
-                    cout << "Received message: " << text << " from chat_id: " << chat_id << endl;
-                    
-                    if (text == "/on") {
-                        sendMessage(chat_id, "Bot is now ON!");
-                    } else if (text == "/off") {
-                        sendMessage(chat_id, "Bot is now OFF!");
-                    } else {
-                        sendMessage(chat_id, "Unknown command: " + text);
+                            cout << "Received message: " << text << " from chat_id: " << chat_id << endl;
+
+                            // Cek dan kirim pesan sesuai dengan perintah
+                            if (text == "/on") {
+                                sendMessage(chat_id, "Bot is now ON!");
+                            } else if (text == "/off") {
+                                sendMessage(chat_id, "Bot is now OFF!");
+                            } else {
+                                sendMessage(chat_id, "Unknown command: " + text);
+                            }
+                        }
                     }
+                } catch (const json::exception& e) {
+                    cerr << "JSON parsing error: " << e.what() << endl;
                 }
             }
         }
         this_thread::sleep_for(chrono::seconds(1));
     }
 }
+
 
 
 int main() {
