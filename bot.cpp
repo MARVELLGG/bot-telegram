@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include "json.hpp" // JSON library
+#include <curl/easy.h> // Header untuk URL Encoding
 
 using namespace std;
 using json = nlohmann::json;
@@ -16,12 +17,33 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* userp) {
     return size * nmemb;
 }
 
+string urlEncode(const string &value) {
+    CURL *curl = curl_easy_init();
+    char *encoded = curl_easy_escape(curl, value.c_str(), value.length());
+    string encoded_str(encoded);
+    curl_free(encoded);
+    curl_easy_cleanup(curl);
+    return encoded_str;
+}
+
 void sendMessage(const string& chat_id, const string& text) {
     CURL* curl = curl_easy_init();
     if (curl) {
-        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + text;
+        string encoded_text = urlEncode(text);
+        string url = API_URL + "/sendMessage?chat_id=" + chat_id + "&text=" + encoded_text;
+        string response;
+        
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_perform(curl);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            cerr << "Curl error: " << curl_easy_strerror(res) << endl;
+        } else {
+            cout << "Response: " << response << endl;
+        }
+        
         curl_easy_cleanup(curl);
     }
 }
@@ -43,7 +65,7 @@ void botLoop() {
             for (auto& update : data["result"]) {
                 last_update_id = to_string(update["update_id"].get<int>() + 1);
 
-                // Periksa jika 'message' ada dan memiliki 'chat' dan 'text'
+                // Pastikan 'message' ada dan memiliki 'chat' dan 'text'
                 if (update["message"].contains("chat") && update["message"].contains("text")) {
                     string chat_id = to_string(update["message"]["chat"]["id"].get<int>());
                     string text = update["message"]["text"].get<string>();
